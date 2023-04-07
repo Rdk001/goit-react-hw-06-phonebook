@@ -1,39 +1,26 @@
-import { useState } from 'react';
-import { nanoid } from 'nanoid';
+import { useDispatch, useSelector } from 'react-redux';
 import { FormContainer, Form, Text, Input, Submit } from './ContactForm.styled';
+import { addContact } from 'components/Redux/contacts/contactsSlice';
+import { nanoid } from '@reduxjs/toolkit';
 
-const ContactForm = ({ onSubmit }) => {
-  const [name, setName] = useState('');
-  const [number, setNumber] = useState('');
-  let formData = { name, number };
+const ContactForm = () => {
+  const dispatch = useDispatch();
+  const contacts = useSelector(state => state.phoneBook.contacts);
 
   const handleSubmit = e => {
     e.preventDefault();
-
     const { name, number } = e.target.elements;
 
-    onSubmit({
-      id: nanoid(),
-      ...formData,
-    });
+    contacts.find(
+      contact => contact.name.toLowerCase() === name.value.toLowerCase()
+    )
+      ? alert(`${name.value} is already in contacts`)
+      : dispatch(
+          addContact({ name: name.value, number: number.value, id: nanoid(3) })
+        );
 
     name.value = '';
     number.value = '';
-  };
-
-  const handleChange = e => {
-    const { name, value } = e.currentTarget;
-
-    switch (name) {
-      case 'name':
-        setName(value);
-        break;
-      case 'number':
-        setNumber(value);
-        break;
-      default:
-        return;
-    }
   };
 
   return (
@@ -42,7 +29,6 @@ const ContactForm = ({ onSubmit }) => {
         <label>
           <Text>Name</Text>
           <Input
-            onChange={handleChange}
             type="text"
             name="name"
             pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
@@ -53,7 +39,6 @@ const ContactForm = ({ onSubmit }) => {
         <label>
           <Text>Number</Text>
           <Input
-            onChange={handleChange}
             type="tel"
             name="number"
             pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
